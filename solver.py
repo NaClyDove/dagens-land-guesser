@@ -70,7 +70,7 @@ COUNTRIES = {
     "Saudi-Arabien": (24.0, 45.0),
     "Yemen": (15.5, 48.0),
     "Oman": (21.0, 57.0),
-    "De Forenede Arabiske Emirater": (24.0, 54.0),
+    "Forenede Arabiske Emirater": (24.0, 54.0),
     "Qatar": (25.5, 51.0),
     "Bahrain": (26.0, 50.5),
     "Kuwait": (29.5, 47.5),
@@ -123,7 +123,7 @@ COUNTRIES = {
     "Sydsudan": (7.0, 30.0),
 
     # Africa - West
-    "Mauritanien": (20.0, -10.0),
+    "Mauretanien": (20.0, -10.0),
     "Mali": (17.0, -4.0),
     "Niger": (16.0, 8.0),
     "Tchad": (15.0, 19.0),
@@ -139,12 +139,12 @@ COUNTRIES = {
     "Togo": (8.5, 1.0),
     "Benin": (9.5, 2.0),
     "Nigeria": (10.0, 8.0),
-    "Cabo Verde": (15.0, -23.5),
+    "Kap Verde": (15.0, -23.5),
 
     # Africa - Central
     "Cameroun": (6.0, 12.0),
     "Centralafrikanske Republik": (7.0, 21.0),
-    "Ækvatorial Guinea": (1.5, 10.5),
+    "Ækvatorialguinea": (1.5, 10.5),
     "Gabon": (-1.0, 12.0),
     "Congo": (-1.0, 15.0),
     "Den Demokratiske Republik Congo": (-3.0, 23.0),
@@ -301,13 +301,17 @@ class DagensLandSolver:
                 # Use API coordinates for the guessed country
                 expected_dist = haversine(api_lat, api_lng, lat2, lon2)
 
-                # More lenient tolerance, especially for small distances
+                # Very lenient tolerance - API uses border-to-border distance,
+                # but we calculate centroid-to-centroid, which can differ greatly
+                # for large countries or island nations
                 if reported_dist < 100:
-                    tolerance = 800  # Very lenient for close guesses
+                    tolerance = 1500  # Very lenient for close guesses
                 elif reported_dist < 500:
-                    tolerance = 600
+                    tolerance = 2000  # Island nations can have large centroid offsets
+                elif reported_dist < 1000:
+                    tolerance = 2000
                 else:
-                    tolerance = max(500, reported_dist * 0.4)
+                    tolerance = max(1500, reported_dist * 0.5)
 
                 if abs(expected_dist - reported_dist) > tolerance:
                     is_consistent = False
